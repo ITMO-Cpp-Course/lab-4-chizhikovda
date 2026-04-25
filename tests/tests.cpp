@@ -7,12 +7,11 @@
 
 using namespace lab4::resource;
 
-
 static std::string createTempFile(const std::string& content)
 {
     std::string name = "temp_test_file.txt";
     std::ofstream out(name); // открываем для записи (перезаписываем)
-    out << content;// пишем содержимое
+    out << content;          // пишем содержимое
     out.close();
     return name;
 }
@@ -21,13 +20,13 @@ TEST_CASE("RAII: FileHandle opens and closes file automatically")
 {
     std::string fname = createTempFile("hello");
     {
-        FileHandle fh(fname, "r");// открываем файл
-        REQUIRE(fh.is_open() == true); 
+        FileHandle fh(fname, "r"); // открываем файл
+        REQUIRE(fh.is_open() == true);
     } // здесь fh уничтожается и файл закрывается
 
     // Проверяем, что файл освобождён: можем открыть его снова
     std::FILE* f = std::fopen(fname.c_str(), "r");
-    REQUIRE(f != nullptr); 
+    REQUIRE(f != nullptr);
     std::fclose(f);
     std::remove(fname.c_str()); // удаляем временный файл
 }
@@ -39,9 +38,9 @@ TEST_CASE("FileHandle move semantics")
     std::FILE* raw = fh1.get(); // запоминаем указатель
 
     FileHandle fh2 = std::move(fh1); // перемещаем владение
-    REQUIRE(fh1.is_open() == false); 
-    REQUIRE(fh2.is_open() == true);  
-    REQUIRE(fh2.get() == raw);       // ресурс тот же
+    REQUIRE(fh1.is_open() == false);
+    REQUIRE(fh2.is_open() == true);
+    REQUIRE(fh2.get() == raw); // ресурс тот же
 
     std::remove(fname.c_str());
 }
@@ -72,5 +71,6 @@ TEST_CASE("ResourceManager caches and shares FileHandle")
 TEST_CASE("ResourceError is thrown on open failure")
 {
 
-    REQUIRE_THROWS_AS(FileHandle fh("nonexistent_file_12345.txt"), ResourceError);    // Попытка открыть несуществующий файл должна выбросить ResourceError
+    REQUIRE_THROWS_AS(FileHandle fh("nonexistent_file_12345.txt"),
+                      ResourceError); // Попытка открыть несуществующий файл должна выбросить ResourceError
 }

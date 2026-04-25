@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdio>
 #include <memory>
-#include <string> // для path, mode 
+#include <string> // для path, mode
 
 namespace lab4::resource
 {
@@ -29,6 +29,5 @@ class FileHandle
     };
     std::unique_ptr<std::FILE, FileCloser> file_;
 };
-
 
 } // namespace lab4::resource
