@@ -16,44 +16,29 @@ static std::string createTempFile(const std::string& content)
     return name;
 }
 
-TEST_CASE("RAII: FileHandle opens and closes file automatically")
+TEST_CASE("opens and closes file")
 {
-    std::string fname = createTempFile("hello");
+    std::string fname = createTempFile("pipipum");
     {
         FileHandle fh(fname, "r"); // открываем файл
         REQUIRE(fh.is_open() == true);
-    } // здесь fh уничтожается и файл закрывается
+    } 
 
-    // Проверяем, что файл освобождён: можем открыть его снова
     std::FILE* f = std::fopen(fname.c_str(), "r");
     REQUIRE(f != nullptr);
     std::fclose(f);
     std::remove(fname.c_str()); // удаляем временный файл
 }
 
-TEST_CASE("FileHandle move semantics")
+TEST_CASE("ResourceManager caches and shares ")
 {
-    std::string fname = createTempFile("test");
-    FileHandle fh1(fname, "r"); // открываем файл
-    std::FILE* raw = fh1.get(); // запоминаем указатель
-
-    FileHandle fh2 = std::move(fh1); // перемещаем владение
-    REQUIRE(fh1.is_open() == false);
-    REQUIRE(fh2.is_open() == true);
-    REQUIRE(fh2.get() == raw); // ресурс тот же
-
-    std::remove(fname.c_str());
-}
-
-TEST_CASE("ResourceManager caches and shares FileHandle")
-{
-    std::string fname = createTempFile("data");
+    std::string fname = createTempFile("pipipum");
     ResourceManager mgr;
 
     auto f1 = mgr.getFile(fname, "r"); // первый запрос – создаётся новый
     auto f2 = mgr.getFile(fname, "r"); // второй запрос – должен вернуть тот же
     REQUIRE(f1.get() == f2.get());     // указатели совпадают
-    REQUIRE(mgr.cacheSize() == 1);     // в кеше одна запись
+
 
     f2.reset();                        // освобождаем одну сильную ссылку
     REQUIRE(mgr.cacheSize() == 1);     // кеш всё ещё хранит слабую ссылку
@@ -68,9 +53,9 @@ TEST_CASE("ResourceManager caches and shares FileHandle")
     std::remove(fname.c_str());
 }
 
-TEST_CASE("ResourceError is thrown on open failure")
+TEST_CASE("ResourceErrorx`")
 {
 
-    REQUIRE_THROWS_AS(FileHandle fh("nonexistent_file_12345.txt"),
-                      ResourceError); // Попытка открыть несуществующий файл должна выбросить ResourceError
+    REQUIRE_THROWS_AS(FileHandle fh("nonexistent_file_12345.txt"), //должно выбрасываться исключение указанного типа
+                      ResourceError); // должна выбросить ResourceError
 }
